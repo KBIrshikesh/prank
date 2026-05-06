@@ -934,11 +934,21 @@
             }
         }
 
-        // Start typing after a short delay
-        setTimeout(() => {
+        // ═══════════════════════════════════════════════
+        // CLICK ANYWHERE TO START (unlocks audio)
+        // ═══════════════════════════════════════════════
+        const splash = document.getElementById('splash-overlay');
+        splash.addEventListener('click', function() {
+            if (this.dataset.active) return;
+            this.dataset.active = "true";
+
+            // Unlock audio context
+            const ctx = getAudioCtx();
+            if (ctx.state === 'suspended') ctx.resume();
+
+            // Start typing first (with sound unlocked)
             typeWriter("I'VE GOT YOU|ANANYA!", 0, function() {
                 // Auto-transition to terminal once typing is done
-                const splash = document.getElementById('splash-overlay');
                 splash.classList.add('hidden');
                 document.getElementById('main-container').style.display = '';
 
@@ -947,12 +957,6 @@
                     startSosAlarm();
                 }, 200);
             });
-        }, 1000);
-
-        // Still trying to capture a click for audio in case they interact later
-        window.addEventListener('click', () => {
-            const ctx = getAudioCtx();
-            if (ctx && ctx.state === 'suspended') ctx.resume();
         }, { once: true });
 
         // ═══════════════════════════════════════════════
