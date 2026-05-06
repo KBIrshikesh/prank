@@ -476,67 +476,61 @@
         }
 
         /* ═══════════════════════════════════════════════════
-           SPLASH / GATE SCREEN
+           SPLASH / MATRIX GATE SCREEN
            ═══════════════════════════════════════════════════ */
         .splash-overlay {
             position: fixed;
             inset: 0;
             background: #000;
             z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
             cursor: pointer;
+            overflow: hidden;
         }
 
         .splash-overlay.hidden {
             display: none;
         }
 
-        .splash-icon {
-            font-size: clamp(4rem, 15vw, 8rem);
-            animation: blink-red 1s step-end infinite;
+        #matrix-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
         }
 
-        .splash-title {
-            color: #FF0000;
-            font-size: clamp(1.2rem, 4vw, 2rem);
+        .splash-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        .splash-name {
+            color: #00FF00;
+            font-size: clamp(1.8rem, 7vw, 4rem);
             font-weight: 700;
             text-align: center;
-            margin-top: 20px;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 0 15px rgba(255,0,0,0.7), 0 0 30px rgba(255,0,0,0.4);
-            animation: blink-red 1.2s step-end infinite;
-        }
-
-        .splash-subtitle {
-            color: #00FF00;
-            font-size: clamp(0.7rem, 2.2vw, 1rem);
-            text-align: center;
-            margin-top: 16px;
-            opacity: 0.8;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(0,255,0,0.8), 0 0 40px rgba(0,255,0,0.4), 0 0 80px rgba(0,255,0,0.2);
+            animation: gotcha-zoom 1s ease-out forwards;
         }
 
         .splash-tap {
-            color: #FF4444;
-            font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-            margin-top: 40px;
-            padding: 12px 30px;
-            border: 2px solid #FF0000;
-            border-radius: 4px;
-            animation: pulse-bg 1.5s ease-in-out infinite, blink-red 2s step-end infinite;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .splash-fine {
-            color: #333;
-            font-size: 0.5rem;
+            color: rgba(0,255,0,0.6);
+            font-size: clamp(0.65rem, 2vw, 0.9rem);
             margin-top: 30px;
-            text-align: center;
+            padding: 10px 24px;
+            border: 1px solid rgba(0,255,0,0.3);
+            border-radius: 4px;
+            letter-spacing: 2px;
+            animation: blink-red 2s step-end infinite;
+            pointer-events: auto;
         }
 
         /* ═══════════════════════════════════════════════════
@@ -558,13 +552,13 @@
     </style>
 </head>
 <body>
-    <!-- SPLASH GATE (unlocks audio on click) -->
+    <!-- SPLASH GATE — Matrix rain (unlocks audio on click) -->
     <div class="splash-overlay" id="splash-overlay">
-        <div class="splash-icon">🛡️</div>
-        <div class="splash-title">⚠ Critical Threat Detected</div>
-        <div class="splash-subtitle">Your device security has been compromised.<br>Immediate action required.</div>
-        <div class="splash-tap">▶ TAP TO VIEW DETAILS</div>
-        <div class="splash-fine">Security scan ID: 0x4F2A · Ref #SEC-78391</div>
+        <canvas id="matrix-canvas"></canvas>
+        <div class="splash-center">
+            <div class="splash-name">I've got you<br>Ananya! 😈</div>
+            <div class="splash-tap">▶ TAP TO CONTINUE</div>
+        </div>
     </div>
 
     <!-- MAIN PRANK CONTENT -->
@@ -618,8 +612,8 @@
     <!-- GOTCHA OVERLAY -->
     <div class="gotcha-overlay" id="gotcha-overlay">
         <div class="gotcha-title">GOTCHA!</div>
-        <div class="gotcha-sub">YOU'VE BEEN PRANKED 🎉</div>
-        <div class="gotcha-emoji">😂</div>
+        <div class="gotcha-sub">I've got you Ananya! 🎉</div>
+        <div class="gotcha-emoji">😂🫵</div>
     </div>
 
     <script>
@@ -983,6 +977,59 @@
 
         // Disable right-click for authenticity
         document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // ═══════════════════════════════════════════════
+        // MATRIX RAIN LOGIC
+        // ═══════════════════════════════════════════════
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズヅブプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const alphabet = katakana + latin + nums;
+
+        const fontSize = 16;
+        let columns = canvas.width / fontSize;
+        let rainDrops = [];
+
+        function initRain() {
+            columns = canvas.width / fontSize;
+            rainDrops = [];
+            for (let x = 0; x < columns; x++) {
+                rainDrops[x] = 1;
+            }
+        }
+        initRain();
+        window.addEventListener('resize', initRain);
+
+        function drawMatrix() {
+            if (document.getElementById('splash-overlay').classList.contains('hidden')) return;
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 30);
     </script>
 </body>
 </html>
