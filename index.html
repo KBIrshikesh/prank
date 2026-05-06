@@ -1,22 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>System Security Alert</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════
            RESET & BASE
            ═══════════════════════════════════════════════════ */
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -35,13 +40,11 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 255, 0, 0.03) 0px,
-                rgba(0, 255, 0, 0.03) 1px,
-                transparent 1px,
-                transparent 3px
-            );
+            background: repeating-linear-gradient(0deg,
+                    rgba(0, 255, 0, 0.03) 0px,
+                    rgba(0, 255, 0, 0.03) 1px,
+                    transparent 1px,
+                    transparent 3px);
             pointer-events: none;
             z-index: 1000;
         }
@@ -50,7 +53,7 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
             pointer-events: none;
             z-index: 999;
         }
@@ -59,20 +62,63 @@
            GLITCH / FLICKER EFFECT
            ═══════════════════════════════════════════════════ */
         @keyframes flicker {
-            0%, 100% { opacity: 1; }
-            3% { opacity: 0.85; }
-            6% { opacity: 1; }
-            7.5% { opacity: 0.7; }
-            9% { opacity: 1; }
-            20% { opacity: 1; }
-            21% { opacity: 0.6; }
-            22% { opacity: 1; }
-            50% { opacity: 1; }
-            51% { opacity: 0.4; }
-            52% { opacity: 1; }
-            80% { opacity: 1; }
-            81% { opacity: 0.8; }
-            82% { opacity: 1; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            3% {
+                opacity: 0.85;
+            }
+
+            6% {
+                opacity: 1;
+            }
+
+            7.5% {
+                opacity: 0.7;
+            }
+
+            9% {
+                opacity: 1;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            21% {
+                opacity: 0.6;
+            }
+
+            22% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            51% {
+                opacity: 0.4;
+            }
+
+            52% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            81% {
+                opacity: 0.8;
+            }
+
+            82% {
+                opacity: 1;
+            }
         }
 
         .flicker-layer {
@@ -80,10 +126,27 @@
         }
 
         @keyframes glitch-shift {
-            0%, 100% { transform: translate(0); filter: none; }
-            10% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
-            20% { transform: translate(2px, -1px); filter: hue-rotate(-90deg); }
-            30% { transform: translate(0); filter: none; }
+
+            0%,
+            100% {
+                transform: translate(0);
+                filter: none;
+            }
+
+            10% {
+                transform: translate(-2px, 1px);
+                filter: hue-rotate(90deg);
+            }
+
+            20% {
+                transform: translate(2px, -1px);
+                filter: hue-rotate(-90deg);
+            }
+
+            30% {
+                transform: translate(0);
+                filter: none;
+            }
         }
 
         .glitch-active {
@@ -106,13 +169,28 @@
            RED ALERT BANNER
            ═══════════════════════════════════════════════════ */
         @keyframes blink-red {
-            0%, 49% { opacity: 1; }
-            50%, 100% { opacity: 0.2; }
+
+            0%,
+            49% {
+                opacity: 1;
+            }
+
+            50%,
+            100% {
+                opacity: 0.2;
+            }
         }
 
         @keyframes pulse-bg {
-            0%, 100% { background-color: rgba(255, 0, 0, 0.15); }
-            50% { background-color: rgba(255, 0, 0, 0.3); }
+
+            0%,
+            100% {
+                background-color: rgba(255, 0, 0, 0.15);
+            }
+
+            50% {
+                background-color: rgba(255, 0, 0, 0.3);
+            }
         }
 
         .alert-banner {
@@ -139,7 +217,7 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             animation: blink-red 1s step-end infinite;
-            text-shadow: 0 0 10px rgba(255,0,0,0.8), 0 0 20px rgba(255,0,0,0.4);
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.4);
         }
 
         /* ═══════════════════════════════════════════════════
@@ -176,9 +254,11 @@
         .terminal-window::-webkit-scrollbar {
             width: 6px;
         }
+
         .terminal-window::-webkit-scrollbar-track {
             background: #001100;
         }
+
         .terminal-window::-webkit-scrollbar-thumb {
             background: #004400;
             border-radius: 3px;
@@ -221,7 +301,9 @@
         }
 
         @keyframes fadeInLine {
-            to { opacity: 1; }
+            to {
+                opacity: 1;
+            }
         }
 
         .cursor-blink {
@@ -235,8 +317,15 @@
         }
 
         @keyframes blink-cursor {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
         }
 
         /* ═══════════════════════════════════════════════════
@@ -259,7 +348,7 @@
             font-size: clamp(1rem, 4vw, 1.6rem);
             font-weight: 700;
             color: #FF0000;
-            text-shadow: 0 0 12px rgba(255,0,0,0.6);
+            text-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
             animation: blink-red 2s step-end infinite;
         }
 
@@ -283,8 +372,15 @@
         }
 
         @keyframes progress-pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.75; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.75;
+            }
         }
 
         .progress-fill::after {
@@ -294,19 +390,22 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: repeating-linear-gradient(
-                -45deg,
-                transparent,
-                transparent 8px,
-                rgba(0,0,0,0.15) 8px,
-                rgba(0,0,0,0.15) 16px
-            );
+            background: repeating-linear-gradient(-45deg,
+                    transparent,
+                    transparent 8px,
+                    rgba(0, 0, 0, 0.15) 8px,
+                    rgba(0, 0, 0, 0.15) 16px);
             animation: stripe-move 1s linear infinite;
         }
 
         @keyframes stripe-move {
-            0% { background-position: 0 0; }
-            100% { background-position: 32px 0; }
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 32px 0;
+            }
         }
 
         /* ═══════════════════════════════════════════════════
@@ -321,13 +420,20 @@
             color: #FF0000;
             font-size: clamp(0.65rem, 2.2vw, 0.85rem);
             line-height: 1.5;
-            text-shadow: 0 0 8px rgba(255,0,0,0.3);
+            text-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
             animation: pulse-bg-warn 2s ease-in-out infinite;
         }
 
         @keyframes pulse-bg-warn {
-            0%, 100% { background-color: rgba(255,0,0,0.08); }
-            50% { background-color: rgba(255,0,0,0.15); }
+
+            0%,
+            100% {
+                background-color: rgba(255, 0, 0, 0.08);
+            }
+
+            50% {
+                background-color: rgba(255, 0, 0, 0.15);
+            }
         }
 
         .warning-block .warning-icon {
@@ -342,7 +448,7 @@
             margin: 20px 0;
             border: 1px solid #003300;
             padding: 10px;
-            background: rgba(0,10,0,0.4);
+            background: rgba(0, 10, 0, 0.4);
             border-radius: 4px;
         }
 
@@ -411,20 +517,60 @@
         }
 
         @keyframes gotcha-zoom {
-            0% { transform: scale(0) rotate(-15deg); opacity: 0; }
-            60% { transform: scale(1.15) rotate(3deg); opacity: 1; }
-            80% { transform: scale(0.95) rotate(-1deg); }
-            100% { transform: scale(1) rotate(0); }
+            0% {
+                transform: scale(0) rotate(-15deg);
+                opacity: 0;
+            }
+
+            60% {
+                transform: scale(1.15) rotate(3deg);
+                opacity: 1;
+            }
+
+            80% {
+                transform: scale(0.95) rotate(-1deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0);
+            }
         }
 
         @keyframes rainbow {
-            0% { color: #FF0000; text-shadow: 0 0 30px #FF0000, 0 0 60px #FF0000; }
-            16% { color: #FF8800; text-shadow: 0 0 30px #FF8800, 0 0 60px #FF8800; }
-            33% { color: #FFFF00; text-shadow: 0 0 30px #FFFF00, 0 0 60px #FFFF00; }
-            50% { color: #00FF00; text-shadow: 0 0 30px #00FF00, 0 0 60px #00FF00; }
-            66% { color: #0088FF; text-shadow: 0 0 30px #0088FF, 0 0 60px #0088FF; }
-            83% { color: #8800FF; text-shadow: 0 0 30px #8800FF, 0 0 60px #8800FF; }
-            100% { color: #FF0000; text-shadow: 0 0 30px #FF0000, 0 0 60px #FF0000; }
+            0% {
+                color: #FF0000;
+                text-shadow: 0 0 30px #FF0000, 0 0 60px #FF0000;
+            }
+
+            16% {
+                color: #FF8800;
+                text-shadow: 0 0 30px #FF8800, 0 0 60px #FF8800;
+            }
+
+            33% {
+                color: #FFFF00;
+                text-shadow: 0 0 30px #FFFF00, 0 0 60px #FFFF00;
+            }
+
+            50% {
+                color: #00FF00;
+                text-shadow: 0 0 30px #00FF00, 0 0 60px #00FF00;
+            }
+
+            66% {
+                color: #0088FF;
+                text-shadow: 0 0 30px #0088FF, 0 0 60px #0088FF;
+            }
+
+            83% {
+                color: #8800FF;
+                text-shadow: 0 0 30px #8800FF, 0 0 60px #8800FF;
+            }
+
+            100% {
+                color: #FF0000;
+                text-shadow: 0 0 30px #FF0000, 0 0 60px #FF0000;
+            }
         }
 
         .gotcha-title {
@@ -443,7 +589,7 @@
             text-align: center;
             animation: gotcha-zoom 0.6s 0.3s ease-out forwards;
             opacity: 0;
-            text-shadow: 0 0 15px rgba(0,255,0,0.5);
+            text-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
         }
 
         .gotcha-emoji {
@@ -454,8 +600,15 @@
         }
 
         @keyframes confetti-fall {
-            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
         }
 
         .confetti {
@@ -471,8 +624,15 @@
            AUDIO CONTEXT BEEP (VISUAL CUE)
            ═══════════════════════════════════════════════════ */
         @keyframes border-flash {
-            0%, 100% { border-color: #FF0000; }
-            50% { border-color: #FF4444; }
+
+            0%,
+            100% {
+                border-color: #FF0000;
+            }
+
+            50% {
+                border-color: #FF4444;
+            }
         }
 
         /* ═══════════════════════════════════════════════════
@@ -517,7 +677,7 @@
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 4px;
-            text-shadow: 0 0 20px rgba(0,255,0,0.8), 0 0 40px rgba(0,255,0,0.4), 0 0 80px rgba(0,255,0,0.2);
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.4), 0 0 80px rgba(0, 255, 0, 0.2);
             min-height: 2.5em;
         }
 
@@ -532,11 +692,11 @@
         }
 
         .splash-tap {
-            color: rgba(0,255,0,0.6);
+            color: rgba(0, 255, 0, 0.6);
             font-size: clamp(0.65rem, 2vw, 0.9rem);
             margin-top: 30px;
             padding: 10px 24px;
-            border: 1px solid rgba(0,255,0,0.3);
+            border: 1px solid rgba(0, 255, 0, 0.3);
             border-radius: 4px;
             letter-spacing: 2px;
             animation: blink-red 2s step-end infinite;
@@ -550,17 +710,20 @@
             #main-container {
                 padding: 8px 10px 60px;
             }
+
             .terminal-window {
                 min-height: 160px;
                 max-height: 220px;
                 padding: 8px;
             }
+
             .progress-track {
                 height: 22px;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- SPLASH GATE — Matrix rain (unlocks audio on click) -->
     <div class="splash-overlay" id="splash-overlay">
@@ -580,8 +743,11 @@
 
         <!-- SYSTEM INFO -->
         <div class="sys-info" id="sys-info">
-            <div><span class="label">TARGET:</span> <span id="target-ip">192.168.1.███</span> &nbsp;|&nbsp; <span class="label">SESSION:</span> <span id="session-id">0xDEADBEEF</span></div>
-            <div><span class="label">PROTOCOL:</span> SSH-2.0-EXPLOIT &nbsp;|&nbsp; <span class="label">STATUS:</span> <span style="color:#FF0000;">ACTIVE BREACH</span></div>
+            <div><span class="label">TARGET:</span> <span id="target-ip">192.168.1.███</span> &nbsp;|&nbsp; <span
+                    class="label">SESSION:</span> <span id="session-id">0xDEADBEEF</span></div>
+            <div><span class="label">PROTOCOL:</span> SSH-2.0-EXPLOIT &nbsp;|&nbsp; <span class="label">STATUS:</span>
+                <span style="color:#FF0000;">ACTIVE BREACH</span>
+            </div>
             <div><span class="label">TIME ELAPSED:</span> <span id="elapsed-time">00:00:00</span></div>
         </div>
 
@@ -611,7 +777,8 @@
         <!-- WARNING BLOCK -->
         <div class="warning-block" id="warning-block" style="display:none;">
             <span class="warning-icon">[!]</span>
-            <strong>WARNING:</strong> Do not close this window. Hard drive wipe in progress. All local data, contacts, photos, and messages will be permanently erased. Recovery will NOT be possible.
+            <strong>WARNING:</strong> Do not close this window. Hard drive wipe in progress. All local data, contacts,
+            photos, and messages will be permanently erased. Recovery will NOT be possible.
         </div>
 
         <!-- HIDDEN ABORT BUTTON -->
@@ -621,7 +788,7 @@
     <!-- GOTCHA OVERLAY -->
     <div class="gotcha-overlay" id="gotcha-overlay">
         <div class="gotcha-title">GOTCHA!</div>
-        <div class="gotcha-sub">I've got you Nasooh!</div>
+        <div class="gotcha-sub">I've got you Ananya!</div>
         <div class="gotcha-emoji"></div>
     </div>
 
@@ -729,7 +896,7 @@
                 gain.connect(ctx.destination);
                 osc.start();
                 osc.stop(ctx.currentTime + duration / 1000);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // ═══════════════════════════════════════════════
@@ -785,7 +952,7 @@
                     osc.start(note.start);
                     osc.stop(note.start + note.dur);
                 });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         function startSosAlarm() {
@@ -821,7 +988,7 @@
                 beep(600, 40);
             } else if (data.status) {
                 const typeClass = data.type === 'danger' ? 'status-danger' :
-                                  data.type === 'warn' ? 'status-warn' : 'status-ok';
+                    data.type === 'warn' ? 'status-warn' : 'status-ok';
                 line.innerHTML = `<span class="${typeClass}">${data.status}</span>`;
                 if (data.type === 'danger') beep(300, 100);
             }
@@ -916,17 +1083,17 @@
             if (i < text.length) {
                 const char = text.charAt(i);
                 const target = document.getElementById("typewriter-text");
-                
+
                 if (char === '|') {
                     target.innerHTML += '<br>';
                 } else {
                     target.innerHTML = target.innerHTML.replace('<span class="typing-cursor"></span>', '') + char + '<span class="typing-cursor"></span>';
                 }
-                
+
                 // Play a tiny tick sound for each character
                 beep(400 + Math.random() * 100, 20);
-                
-                setTimeout(function() {
+
+                setTimeout(function () {
                     typeWriter(text, i + 1, fnCallback)
                 }, 100 + Math.random() * 150);
             } else if (typeof fnCallback == 'function') {
@@ -938,7 +1105,7 @@
         // CLICK ANYWHERE TO START (unlocks audio)
         // ═══════════════════════════════════════════════
         const splash = document.getElementById('splash-overlay');
-        splash.addEventListener('click', function() {
+        splash.addEventListener('click', function () {
             if (this.dataset.active) return;
             this.dataset.active = "true";
 
@@ -947,7 +1114,7 @@
             if (ctx.state === 'suspended') ctx.resume();
 
             // Start typing first (with sound unlocked)
-            typeWriter("I'VE GOT YOU|NASOOH!", 0, function() {
+            typeWriter("I'VE GOT YOU|NASOOH!", 0, function () {
                 // Auto-transition to terminal once typing is done
                 splash.classList.add('hidden');
                 document.getElementById('main-container').style.display = '';
@@ -1002,13 +1169,13 @@
                     osc.start(ctx.currentTime + i * 0.15);
                     osc.stop(ctx.currentTime + i * 0.15 + 0.12);
                 });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // ═══════════════════════════════════════════════
         // PREVENT CLOSING (adds to believability)
         // ═══════════════════════════════════════════════
-        window.addEventListener('beforeunload', function(e) {
+        window.addEventListener('beforeunload', function (e) {
             if (!pranked) {
                 e.preventDefault();
                 e.returnValue = 'WARNING: Closing this window will cause irreversible data loss!';
@@ -1072,4 +1239,5 @@
         setInterval(drawMatrix, 30);
     </script>
 </body>
+
 </html>
