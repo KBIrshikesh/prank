@@ -594,7 +594,7 @@
 
         <!-- FILES BEING "ACCESSED" -->
         <div class="file-section" id="file-section" style="display:none;">
-            <div class="file-section-title">📁 FILES ACCESSED — /home/user/</div>
+            <div class="file-section-title">[DIR] FILES ACCESSED — /home/user/</div>
             <div id="file-list"></div>
         </div>
 
@@ -611,7 +611,7 @@
 
         <!-- WARNING BLOCK -->
         <div class="warning-block" id="warning-block" style="display:none;">
-            <span class="warning-icon">🔴</span>
+            <span class="warning-icon">[!]</span>
             <strong>WARNING:</strong> Do not close this window. Hard drive wipe in progress. All local data, contacts, photos, and messages will be permanently erased. Recovery will NOT be possible.
         </div>
 
@@ -622,8 +622,8 @@
     <!-- GOTCHA OVERLAY -->
     <div class="gotcha-overlay" id="gotcha-overlay">
         <div class="gotcha-title">GOTCHA!</div>
-        <div class="gotcha-sub">I've got you Ananya! 🎉</div>
-        <div class="gotcha-emoji">😂🫵</div>
+        <div class="gotcha-sub">I've got you Ananya!</div>
+        <div class="gotcha-emoji"></div>
     </div>
 
     <script>
@@ -847,7 +847,7 @@
                     const item = document.createElement('div');
                     item.className = 'file-item';
                     item.style.animationDelay = `${i * 0.1}s`;
-                    item.innerHTML = `📄 ${file.name} <span class="file-status">[${file.status}]</span>`;
+                    item.innerHTML = `[FILE] ${file.name} <span class="file-status">[${file.status}]</span>`;
                     list.appendChild(item);
                     beep(400 + i * 30, 30);
                 }, i * 150);
@@ -937,7 +937,7 @@
 
         // Start typing after a short delay
         setTimeout(() => {
-            typeWriter("I'VE GOT YOU|ANANYA! 😈", 0, function() {
+            typeWriter("I'VE GOT YOU|ANANYA!", 0, function() {
                 // Show the tap button once typing is done
                 const btn = document.getElementById('splash-tap-btn');
                 btn.style.opacity = '1';
