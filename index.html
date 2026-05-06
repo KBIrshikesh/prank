@@ -518,7 +518,17 @@
             text-transform: uppercase;
             letter-spacing: 4px;
             text-shadow: 0 0 20px rgba(0,255,0,0.8), 0 0 40px rgba(0,255,0,0.4), 0 0 80px rgba(0,255,0,0.2);
-            animation: gotcha-zoom 1s ease-out forwards;
+            min-height: 2.5em;
+        }
+
+        .typing-cursor {
+            display: inline-block;
+            width: 10px;
+            height: clamp(1.8rem, 7vw, 4rem);
+            background: #00FF00;
+            margin-left: 5px;
+            vertical-align: middle;
+            animation: blink-cursor 0.7s step-end infinite;
         }
 
         .splash-tap {
@@ -556,8 +566,8 @@
     <div class="splash-overlay" id="splash-overlay">
         <canvas id="matrix-canvas"></canvas>
         <div class="splash-center">
-            <div class="splash-name">I've got you<br>Ananya! 😈</div>
-            <div class="splash-tap">▶ TAP TO CONTINUE</div>
+            <div class="splash-name" id="typewriter-text"></div>
+            <div class="splash-tap" id="splash-tap-btn" style="opacity: 0; pointer-events: none; transition: opacity 1s;">▶ TAP TO CONTINUE</div>
         </div>
     </div>
 
@@ -901,9 +911,48 @@
         }
 
         // ═══════════════════════════════════════════════
+        // TYPEWRITER EFFECT
+        // ═══════════════════════════════════════════════
+        function typeWriter(text, i, fnCallback) {
+            if (i < text.length) {
+                const char = text.charAt(i);
+                const target = document.getElementById("typewriter-text");
+                
+                if (char === '|') {
+                    target.innerHTML += '<br>';
+                } else {
+                    target.innerHTML = target.innerHTML.replace('<span class="typing-cursor"></span>', '') + char + '<span class="typing-cursor"></span>';
+                }
+                
+                // Play a tiny tick sound for each character
+                beep(400 + Math.random() * 100, 20);
+                
+                setTimeout(function() {
+                    typeWriter(text, i + 1, fnCallback)
+                }, 100 + Math.random() * 150);
+            } else if (typeof fnCallback == 'function') {
+                setTimeout(fnCallback, 700);
+            }
+        }
+
+        // Start typing after a short delay
+        setTimeout(() => {
+            typeWriter("I'VE GOT YOU|ANANYA! 😈", 0, function() {
+                // Show the tap button once typing is done
+                const btn = document.getElementById('splash-tap-btn');
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            });
+        }, 1000);
+
+        // ═══════════════════════════════════════════════
         // SPLASH GATE — waits for user tap to unlock audio
         // ═══════════════════════════════════════════════
         document.getElementById('splash-overlay').addEventListener('click', function() {
+            // Only allow dismissal if the button is visible
+            const btn = document.getElementById('splash-tap-btn');
+            if (btn.style.opacity !== '1') return;
+            
             // Hide splash, show main content
             this.classList.add('hidden');
             document.getElementById('main-container').style.display = '';
