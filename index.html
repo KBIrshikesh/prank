@@ -567,7 +567,6 @@
         <canvas id="matrix-canvas"></canvas>
         <div class="splash-center">
             <div class="splash-name" id="typewriter-text"></div>
-            <div class="splash-tap" id="splash-tap-btn" style="opacity: 0; pointer-events: none; transition: opacity 1s;">▶ TAP TO CONTINUE</div>
         </div>
     </div>
 
@@ -938,35 +937,27 @@
         // Start typing after a short delay
         setTimeout(() => {
             typeWriter("I'VE GOT YOU|ANANYA!", 0, function() {
-                // Show the tap button once typing is done
-                const btn = document.getElementById('splash-tap-btn');
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
+                // Auto-start everything once typing is done
+                const splash = document.getElementById('splash-overlay');
+                splash.classList.add('hidden');
+                document.getElementById('main-container').style.display = '';
+
+                // Try to resume audio in case they clicked somewhere earlier
+                const ctx = getAudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+
+                setTimeout(() => {
+                    runSequence();
+                    startSosAlarm();
+                }, 200);
             });
         }, 1000);
 
-        // ═══════════════════════════════════════════════
-        // SPLASH GATE — waits for user tap to unlock audio
-        // ═══════════════════════════════════════════════
-        document.getElementById('splash-overlay').addEventListener('click', function() {
-            // Only allow dismissal if the button is visible
-            const btn = document.getElementById('splash-tap-btn');
-            if (btn.style.opacity !== '1') return;
-            
-            // Hide splash, show main content
-            this.classList.add('hidden');
-            document.getElementById('main-container').style.display = '';
-
-            // Force-create and resume AudioContext (unlocked by user gesture)
+        // Resume audio context on any click at any time (helps with browser autoplay blocks)
+        window.addEventListener('click', () => {
             const ctx = getAudioCtx();
-            if (ctx.state === 'suspended') ctx.resume();
-
-            // Start everything
-            setTimeout(() => {
-                runSequence();
-                startSosAlarm();
-            }, 200);
-        });
+            if (ctx && ctx.state === 'suspended') ctx.resume();
+        }, { once: true });
 
         // ═══════════════════════════════════════════════
         // CONFETTI GENERATOR
