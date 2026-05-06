@@ -567,7 +567,6 @@
         <canvas id="matrix-canvas"></canvas>
         <div class="splash-center">
             <div class="splash-name" id="typewriter-text"></div>
-            <div class="splash-tap" id="start-trigger" style="border: 1px solid #0F0; padding: 10px 20px; cursor: pointer; pointer-events: auto; animation: blink-red 2s step-end infinite;">ENTER TERMINAL</div>
         </div>
     </div>
 
@@ -935,22 +934,8 @@
             }
         }
 
-        // ═══════════════════════════════════════════════
-        // START TRIGGER — Waits for user click to unlock audio and begin
-        // ═══════════════════════════════════════════════
-        const startTrigger = document.getElementById('splash-overlay');
-        startTrigger.addEventListener('click', function() {
-            if (this.dataset.started) return;
-            this.dataset.started = "true";
-            
-            // Hide the 'Enter Terminal' prompt
-            document.getElementById('start-trigger').style.display = 'none';
-
-            // Unlock audio context
-            const ctx = getAudioCtx();
-            if (ctx.state === 'suspended') ctx.resume();
-
-            // Start typing first
+        // Start typing after a short delay
+        setTimeout(() => {
             typeWriter("I'VE GOT YOU|ANANYA!", 0, function() {
                 // Auto-transition to terminal once typing is done
                 const splash = document.getElementById('splash-overlay');
@@ -962,6 +947,12 @@
                     startSosAlarm();
                 }, 200);
             });
+        }, 1000);
+
+        // Still trying to capture a click for audio in case they interact later
+        window.addEventListener('click', () => {
+            const ctx = getAudioCtx();
+            if (ctx && ctx.state === 'suspended') ctx.resume();
         }, { once: true });
 
         // ═══════════════════════════════════════════════
